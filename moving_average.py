@@ -52,7 +52,7 @@ min_val = np.min(forecast)
 max_val = np.max(forecast)
 forecast_prob = (forecast - min_val) / (max_val - min_val)
 
-# convert daily seizure rate to a seizure index (True/False)
+# convert daily seizure rate to a seizure index (True/False) beginning on day 91
 sz_index = daily_rate[90:]['Value'].reset_index(drop=True)
 sz_index = sz_index > 0
 
