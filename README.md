@@ -6,7 +6,7 @@ To get started:
 
 # To run and validate the forecast
 
-1. Save data in `./cache` folder. Any seizure events should be stored under the 
+1. Save data in `cache` folder. Any seizure events should be stored under the 
 2. Run forecast on patient data
 3. Validate forecast results for each patient
 
@@ -15,7 +15,7 @@ To get started:
 See the following files for example input data:
 `cache/seizure_events/eg1.json`
 
-Saved as .json files in `./cache/seizure_events` folder. Json file stores list of events like [{'start_time': 12343}, {'start_time': 45676}, {}, ...]
+Saved as .json files in `cache/seizure_events` folder. Json file stores list of events like [{'start_time': 12343}, {'start_time': 45676}, {}, ...]
 Note that all times are UNIX timestamps (in milliseconds)
 
 ## How to run forecast
@@ -29,7 +29,7 @@ To run the forecast in a real-world **prospective** setting, giving future outpu
 The above command will also provide retrospective (training) likelihoods, which can be found in the output file by using the `file` option specified in `--outputs`:
 `python -m src run --algos moving_average --ids all --outputs forecast,file`
 
-(Data is saved in `./results`)
+(Data is saved in `results`)
 
 ### Other arguments 
 
