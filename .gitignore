@@ -49,9 +49,9 @@ venv.bak/
 node_modules
 
 # repo specific
-results/
-cache/
+results/*
 *.csv
+*.png
 
 # specific to local repo
 requirements-38.txt
