@@ -48,10 +48,5 @@ venv.bak/
 .vscode
 node_modules
 
-# repo specific
-/results/
-*.csv
-*.png
-
 # specific to local repo
 requirements-38.txt
