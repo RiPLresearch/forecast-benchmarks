@@ -49,7 +49,7 @@ venv.bak/
 node_modules
 
 # repo specific
-results/*
+/results/
 *.csv
 *.png
 
