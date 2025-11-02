@@ -47,7 +47,10 @@ class FileDataSource:
 
     def get_seizure_events(self,
                          patient_id: str,
-                         _from_time: Number = 0,
-                         _to_time: Number = 9e12) -> Any:
-        return self._get_file_utility('seizure_events', patient_id)
+                         from_time: Number = 0,
+                         to_time: Number = 9e12) -> Any:
+        file = self._get_file_utility('seizure_events', patient_id)
 
+        file = [event for event in file
+                if from_time <= event['start_time'] <= to_time]
+        return file

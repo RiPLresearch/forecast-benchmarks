@@ -81,15 +81,11 @@ Note that specifying algo names and patient IDs is done in the same way as descr
 
 The `-n` argument allows you to select the minimum number of training seizure events (default is 10). This is useful for the pseudo-prospective forecast but also allows patients without enough data to be ignored in both the pseudo-prospective and prospective settings.
 
-- likelihoods: hourly pseudo-prospective forecasting likelihoods
-- daily_likelihoods: future daily likelihoods, starting from request_time ()
-- likelihood_times: hourly timestamps corresponding to the likelihoods
-- daily_likelihood_times: daily timestamps corresponding to the daily_likelihoods
-- event_times: seizure events that occured during the pseudo-prospective evaluation period
-- medium_thresholds_past: medium thresholds (threshold between low and medium risk) corresponding to hourly likelihoods
-- high_thresholds_past: high thresholds (threshold between medium and high risk) corresponding to hourly likelihoods
-- medium_thresholds_daily: medium thresholds (threshold between low and medium risk) corresponding to daily likelihoods
-- high_thresholds_daily: high thresholds (threshold between medium and high risk) corresponding to daily likelihoods
+The `--start_time` argument allow you to select the start time from when the forecast starts. All events recorded after this date will be ignored and only events before this date will be used in training.
+To use it, specify the time from when the forecast is required to start in UNIX (milliseconds since UTC epoch). It is possible to use an online calcualtor to determine this, such as https://www.epochconverter.com/
+Example use: `--start_time 1638241455000`
+If this argument is not used, the forecast will automatically be generated from today.
+
 
 ## Forecast outputs
 There are two forecast outputs in retrospective/prospective mode that can be selected with the `--outputs` argument:
@@ -97,9 +93,27 @@ There are two forecast outputs in retrospective/prospective mode that can be sel
 - forecast: plots a future forecast
 
 ### Interpreting the retrospective/propsective _prospective_outputs.json files
-The `{patient_id}_{algo_name}_prospective_outputs.json` files are generated when the forecast is run with the `--outputs file` option.
+The `{patient_id}_{algo_name}_prospective_outputs.json` files are generated when the forecast is run with the `--outputs file` option. The outputs are a dictionary with keys, explained below (all other keys are irrelevant):
 
-#TODO
+**Training specific (retrospective):**
+- likelihoods_past: past (training) hourly likelihoods, usually starting from the first seizure event (algorithm dependent)
+- likelihood_times_past: hourly timestamps corresponding to the likelihoods_past
+- event_times: seizure events used in training
+- medium_thresholds_past: medium thresholds (threshold between low and medium risk) corresponding to likelihoods_past. For future thresholds, use the last value in this list.
+- high_thresholds_past: high thresholds (threshold between medium and high risk) corresponding to likelihoods_past. For future thresholds, use the last value in this list.
+
+**Future predictions (prospective):**
+*Hourly:*
+- likelihoods: future hourly likelihoods, starting from today or from given `--start_time`
+- likelihood_times: hourly timestamps corresponding to the likelihoods
+*Daily:*
+For each moment in time, daily likelihoods are just an average of the hourly likelihoods over the next 24 hours. Note that daily likelihoods are intended to work for all timezones, so the easiest way to deconstruct these is to search for the timestamps in daily_likelihood_times that correspond to midnight in your timezone, and find the corresponding likelihood values.
+- daily_likelihoods: future daily likelihoods, given per hour.
+- daily_likelihood_times: daily timestamps corresponding to the daily_likelihoods
+- medium_thresholds_daily: medium thresholds (threshold between low and medium risk) for each timezone (timezones range from -12 to +14 (27 values)), for use with daily_likelihoods.
+- high_thresholds_daily: high thresholds (threshold between medium and high risk) for each timezone (timezones range from -12 to +14 (27 values)), for use with daily_likelihoods.
+
+- notes: Notes on the forecast, usually containing training events used and duration of the future forecast.
 
 # 3. Validating the forecast results
 After running the forecast in pseudo-prospective mdode, you can execute `python src/validation/validate_all.py` from your terminal.

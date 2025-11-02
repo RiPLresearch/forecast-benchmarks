@@ -236,3 +236,4 @@ def future_likelihood_plot(patient_id: str,
 
     # Save figure
     plt.savefig(os.path.join(output_path, f'{patient_id}.png'), dpi=300)
+    plt.close()

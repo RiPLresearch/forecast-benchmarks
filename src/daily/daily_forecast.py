@@ -172,6 +172,12 @@ def generate_daily_forecast(outputs: RiskOutput,
     daily_likelihoods_future = all_daily_likelihoods[n_past_hours:]
     outputs.daily_likelihoods = all_daily_likelihoods[n_past_hours -
                                                       24:]  # 24 hrs padding
+    
+    # Add times for daily likelihoods
+    likelihood_times_past = list(outputs.likelihood_times_past)
+    likelihood_times = list(outputs.likelihood_times)
+    daily_likelihood_times = likelihood_times_past + likelihood_times
+    outputs.daily_likelihood_times = daily_likelihood_times[n_past_hours - 24:-24]
 
     # choose threshold percentiles
     lower_perc, upper_perc = choose_threshold_percentiles(

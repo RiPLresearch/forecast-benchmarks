@@ -17,7 +17,7 @@ class DataGenerator:
         self.source = source
 
     def _get_seizure_events(
-            self, patient_id: str) -> List[Mapping[str, NumberOrString]]:
+            self, patient_id: str, to_time: Optional[float] = None) -> List[Mapping[str, NumberOrString]]:
         """
         Opens seizure events, sorts and removes duplicates
         e.g.
@@ -25,7 +25,7 @@ class DataGenerator:
             'start_time': 1622708683000,  # float, UNIX timestamps, ms
             }, {}, ...]
         """
-        seizure_events = self.source.get_seizure_events(patient_id)
+        seizure_events = self.source.get_seizure_events(patient_id, to_time=to_time)
         print(f"[{patient_id}] Loaded seizure events from source")  # remove
 
         seizure_events.sort(key=lambda seizure_event: seizure_event['start_time'])
@@ -34,7 +34,7 @@ class DataGenerator:
 
     # pylint: disable=too-many-branches
     def generate_input(self, input_data: AlgorithmInputs, patient_id: str,
-                       required_inputs: RequiredInputs) -> AlgorithmInputs:
+                       required_inputs: RequiredInputs, request_time: Optional[float] = None) -> AlgorithmInputs:
         """
         A wrapper function to generate the input.
         """
@@ -55,7 +55,8 @@ class DataGenerator:
                 if getattr(required_inputs, key)
             })
         inputs.patient_id = patient_id
-        inputs.request_time = time.time() * MILLISECONDS_IN_A_SECOND
+        request_time = time.time() * MILLISECONDS_IN_A_SECOND if request_time is None else request_time
+        inputs.request_time = request_time
 
         # Reset required inputs
         empty_input_class = AlgorithmInputs()
@@ -70,6 +71,6 @@ class DataGenerator:
             })
 
         if required_inputs.seizure_events:
-            inputs.seizure_events = self._get_seizure_events(patient_id)
+            inputs.seizure_events = self._get_seizure_events(patient_id, to_time=request_time)
 
         return inputs

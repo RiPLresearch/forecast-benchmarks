@@ -60,8 +60,10 @@ def cli() -> None:
               "--mulitprocessing",
               is_flag=True,
               help="Set this flag to run the commands with multiprocessing")
+@click.option("-st", "--start_time", default=None, show_default=True,
+              help="Time to start the forecast from, in UTC ms")
 def run(algos, ids, outputs, n_events, prospective, hyperparameters, sig_test,
-        mulitprocessing) -> None:
+        mulitprocessing, start_time) -> None:
 
     os.environ["MIN_EVENTS"] = str(n_events)
 
@@ -72,7 +74,7 @@ def run(algos, ids, outputs, n_events, prospective, hyperparameters, sig_test,
         algos.split(',') if algos else ["overseer"],
         outputs.split(',') if outputs else ["print"], n_events, prospective,
         hyperparameters.split(',') if hyperparameters else ["default"],
-        sig_test, mulitprocessing)
+        sig_test, mulitprocessing, start_time)
     print(
         f"Risk-algo Runtime initialised, starting {algos} for patients: {ids.split(',')}"
     )

@@ -30,7 +30,7 @@ class AlgorithmRuntime:
     def __init__(self, ids: List[str], algo_names: List[str],
                  outputs: List[str], n_events: str, prospective: bool,
                  hyperparams_change_files: List[str], sig_test: bool,
-                 multiprocessing: bool) -> None:
+                 multiprocessing: bool, start_time: Optional[str]) -> None:
         """
         Creates a new algorithm runtime by reading in arguments from the namespace.
         Validates the arguments, including attempting to import the algorithm namespace.
@@ -55,6 +55,9 @@ class AlgorithmRuntime:
         self.hyperparams_change_files = hyperparams_change_files
         self.sig_test = sig_test
         self.mp = multiprocessing
+
+        # can only be used in retrospective/prospective mode
+        self.request_time = None if start_time is None or self.prospective else float(start_time)
 
         # placeholders
         self.patient_inputs = None
@@ -144,7 +147,7 @@ class AlgorithmRuntime:
 
             # check if result already exists
             # result_file_path = PATHS.results_path(
-            #     f'{patient_id}_{self.algo_names[0]}_results.json')
+            #     f'{patient_id}_{self.algo_names[0]}_pseudoprospective_outputs.json')
             # if os.path.exists(result_file_path):
             #     print(
             #         f'[{patient_id}] Results already exist at {result_file_path}, skipping'
@@ -159,7 +162,7 @@ class AlgorithmRuntime:
 
             try:
                 risk_input = self.data_generator.generate_input(
-                    AlgorithmInputs(), patient_id, risk_required_inputs)
+                    AlgorithmInputs(), patient_id, risk_required_inputs, self.request_time)
             except Exception as e:
                 print(
                     f'[{patient_id}] Failed to generate inputs due to: {e} (E000)')
@@ -367,7 +370,7 @@ class AlgorithmRuntime:
         # save notes
         output_notes = [{
             test_day[0]: output.notes
-        } if not output.is_empty() else np.nan
+        } if not output.is_empty() else {test_day[0]: "No forecast generated"}
                         for output, test_day in zip(outputs, testing_days)]
         write_json(
             output_notes, os.path.join("results", f'{inputs.patient_id}_{algo["name"]}_output_notes.json'))
