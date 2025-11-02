@@ -1,8 +1,8 @@
 import os
 import pathlib
-
 import numpy as np
 import pandas as pd
+from sklearn.metrics import precision_recall_curve, auc, brier_score_loss
 
 if __name__ == "__main__":
     import sys
@@ -19,8 +19,8 @@ from src.algorithms.time_of_day.likelihood_to_risk import get_event_inds
 
 """"
 Script to generate and save AUC plots for all patients with results from the time_of_day algorithm.
-Saves individual plots in ./results/auc_scores/{patient_id}.png
-and a combined plot in ./results/auc_scores/all.png
+Saves individual plots in ./results/performance_metrics/{patient_id}.png
+and a combined plot in ./results/performance_metrics/all.png
 """
 
 """
@@ -71,12 +71,21 @@ def run_auc_plots(patient_ids, algo_name: str, storage_folder: str = ""):
         [i.replace(f'_{ALGO_NAME}_pseudoprospective_outputs', '')
          for i in eligible_ids], os.path.join(storage_folder, f"all_{algo_name}.png"), use_random_outputs=USE_SIGNIFICANCE_TESTING)
 
-    # Save AUC scores to csv
-    auc_df = pd.DataFrame({
-        'patient_id': eligible_ids,
-        'auc_roc_score': [roc_auc[i] for i in range(n_patients)]
-    })
-    auc_df.to_csv(os.path.join(storage_folder, f"auc_scores_{algo_name}.csv"), index=False)
+    rows = []
+    for i, patient_id in enumerate(eligible_ids):
+        # PR-AUC
+        precision, recall, _ = precision_recall_curve(y_trues[i], likelihoods[i])
+        pr_auc = auc(recall, precision)
+        # Brier
+        brier = brier_score_loss(y_trues[i], likelihoods[i])
+        rows.append({
+            "patient_id": patient_id,
+            "roc_auc": float(roc_auc[i]),
+            "pr_auc": float(pr_auc),
+            "brier": float(brier)
+        })
+
+    pd.DataFrame(rows).to_csv(os.path.join(storage_folder, f"performance_scores_{algo_name}.csv"), index=False)
 
 if __name__ == "__main__":
     # Open all existing results files
@@ -85,7 +94,7 @@ if __name__ == "__main__":
         if file_name.endswith(f"_{ALGO_NAME}_pseudoprospective_outputs.json")
     ]
 
-    storage_folder = save_fig = PATHS.results_path("auc_scores")
+    storage_folder = save_fig = PATHS.results_path("performance_metrics")
 
     os.makedirs(storage_folder, exist_ok=True)
     run_auc_plots(patient_ids, ALGO_NAME, storage_folder=storage_folder)

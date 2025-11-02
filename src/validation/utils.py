@@ -3,12 +3,45 @@ import os
 from typing import Any, Dict, List, Sequence, Tuple, Union
 import numpy as np
 from numpy.typing import NDArray as Array
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, precision_recall_curve, auc, brier_score_loss 
 import matplotlib.pyplot as plt
 from matplotlib import dates
 from itertools import cycle
 from src.algorithms.time_of_day.likelihood_to_risk import get_event_inds
 from src.utils import read_json
+
+
+def get_pr_auc_data(y_true, likelihood, n_patients):
+    """Return per-patient and micro/macro PR-AUC."""
+    prc = {}
+    rec = {}
+    pr_auc = {}
+
+    for i in range(n_patients):
+        precision, recall, _ = precision_recall_curve(y_true[i], likelihood[i])
+        prc[i], rec[i] = precision, recall
+        pr_auc[i] = auc(recall, precision)
+
+    # micro-average PR curve
+    precision_micro, recall_micro, _ = precision_recall_curve(
+        np.concatenate(y_true), np.concatenate(likelihood)
+    )
+    prc["micro"], rec["micro"] = precision_micro, recall_micro
+    pr_auc["micro"] = auc(recall_micro, precision_micro)
+
+    # macro-average PR-AUC
+    # interpolate recall grid similar to ROC macro if desired; simplest is mean of per-patient AUCs
+    pr_auc["macro"] = np.mean([pr_auc[i] for i in range(n_patients)])
+    return prc, rec, pr_auc
+
+def get_brier_per_patient(y_true, likelihood, n_patients):
+    """Return dict of Brier scores per patient."""
+    brier = {}
+    for i in range(n_patients):
+        brier[i] = brier_score_loss(y_true[i], likelihood[i])
+    brier["macro"] = np.mean([brier[i] for i in range(n_patients)])
+    return brier
+
 
 def convert_timestamps(inp_list):
     return [datetime.fromtimestamp(t / 1000) for t in inp_list]

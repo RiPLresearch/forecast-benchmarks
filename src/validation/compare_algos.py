@@ -2,11 +2,7 @@ import os
 import pathlib
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_auc_score
-
-
-## python -m src run --algos time_of_day,moving_average --ids NV_1,NV_2,NV_3,NV_4,NV_5,NV_6,NV_7,NV_8,NV_9,NV_10,NV_11,NV_12,NV_13,NV_14,NV_15 --outputs prospective -mp -p
-
+from sklearn.metrics import roc_auc_score, precision_recall_curve, auc, brier_score_loss
 
 if __name__ == "__main__":
     import sys
@@ -32,6 +28,8 @@ from src.algorithms.time_of_day.likelihood_to_risk import get_event_inds
 def run_auc_plots(patient_ids, algo_name, algo_type = False, auc_scores_only = False, storage_folder = ""):
 
     auc_scores = {}
+    pr_auc_scores = {}
+    brier_scores = {} 
     event_count = {}
     testing_days = {}
     results_data = open_results(patient_ids, algo_name)
@@ -97,17 +95,24 @@ def run_auc_plots(patient_ids, algo_name, algo_type = False, auc_scores_only = F
             if (np.sum(y_true) < 5) or (len(likelihood) / 24 < 30 if algo_type == "hourly" else len(likelihood) < 30):
                 continue
 
-            # auc score
+            # AUC-ROC score
             event_count[patient_id] = np.sum(y_true)
             testing_days[patient_id] = len(likelihood) / 24 if algo_type == "hourly" else len(likelihood)
             auc_scores[patient_id] = roc_auc_score(y_true, likelihood)
+
+            # AUPRC (PR AUC): use precision_recall_curve then integrate
+            precision, recall, _ = precision_recall_curve(y_true, likelihood)
+            pr_auc_scores[patient_id] = auc(recall, precision)
+
+            # Brier score
+            brier_scores[patient_id] = brier_score_loss(y_true, likelihood)
 
         except Exception as e:
             print(f"Skipping patient {patient_id} due to error: {e}")
             continue
 
     if auc_scores_only:
-        return auc_scores, event_count, testing_days
+        return auc_scores, event_count, testing_days, pr_auc_scores, brier_scores
 
     y_trues = np.array(y_trues, dtype=object)
     likelihoods = np.array(likelihoods, dtype=object)
@@ -126,7 +131,7 @@ def run_auc_plots(patient_ids, algo_name, algo_type = False, auc_scores_only = F
 
 if __name__ == "__main__":
 
-    storage_folder = PATHS.results_path("auc_scores")
+    storage_folder = PATHS.results_path("performance_metrics")
 
     os.makedirs(storage_folder, exist_ok=True)
 
@@ -138,17 +143,21 @@ if __name__ == "__main__":
                 if file_name.endswith(f'_{algo_name}_pseudoprospective_outputs.json')
             ]
 
-            auc_scores, event_count, testing_days = run_auc_plots(patient_ids, algo_name, algo_type, auc_scores_only=True, storage_folder=storage_folder)
+            auc_scores, event_count, testing_days, pr_auc_scores, brier_scores = run_auc_plots(patient_ids, algo_name, algo_type, auc_scores_only=True, storage_folder=storage_folder)
             if "patient_id" not in df.columns:
                 df['patient_id'] = list(auc_scores.keys())
+
 
             if algo_type == 'hourly' and algo_name == ALGO_1:
                 df[f"testing_events"] = [event_count[p_id] if p_id in event_count else None for p_id in df['patient_id']]
                 df[f"testing_days"] = [testing_days[p_id] if p_id in testing_days else None for p_id in df['patient_id']]
                 df[f"seizure_frequency"] = df["testing_events"] / df["testing_days"]
             
+            # add metrics to dataframe
             df[f"auc_{algo_name}_{algo_type}"] = [auc_scores[p_id] if p_id in auc_scores else None for p_id in df['patient_id']]
+            df[f"pr_auc_{algo_name}_{algo_type}"] = [pr_auc_scores[p_id] if p_id in pr_auc_scores else None for p_id in df['patient_id']]
+            df[f"brier_score_{algo_name}_{algo_type}"] = [brier_scores[p_id] if p_id in brier_scores else None for p_id in df['patient_id']]
 
     df[f"hourly_{ALGO_1}>{ALGO_2}"] = df[f"auc_{ALGO_1}_hourly"] > df[f"auc_{ALGO_2}_hourly"]
     df[f"daily_{ALGO_1}>{ALGO_2}"] = df[f"auc_{ALGO_1}_daily"] > df[f"auc_{ALGO_2}_daily"]
-    df.to_csv(os.path.join(storage_folder, "compare_algos_auc_scores.csv"))
+    df.to_csv(os.path.join(storage_folder, f"compare_performance_{ALGO_1}_{ALGO_2}.csv"))
