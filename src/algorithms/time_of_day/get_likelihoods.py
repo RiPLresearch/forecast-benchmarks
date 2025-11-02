@@ -105,7 +105,7 @@ def get_tod_likelihoods(outputs: RiskOutput, event_times: Array, params: Paramet
     likelihoods_past, likelihoods = get_likelihoods(
         event_times, likelihood_times_past, likelihood_times, params)
 
-    outputs.notes += f'Seizure events: {len(event_times)} ||'
+    outputs.notes += f'Training events used for run: {len(event_times)}. Forecast generated for {params.forecast_days} days.'
 
     outputs.likelihoods = likelihoods.tolist(
     )  # list of float, 24*60 values for the next 60 days

@@ -1,4 +1,3 @@
-from datetime import datetime
 import os
 from typing import List
 from src.constants import PATHS
@@ -15,4 +14,4 @@ def output_handler(inputs: AlgorithmInputs, outputs: RiskOutput,
 
     # save data
     write_json(outputs.__dict__,
-               os.path.join(save_fig, f'{inputs.patient_id}_{algo_name}_results.json'))
+               os.path.join(save_fig, f'{inputs.patient_id}_{algo_name}_prospective_outputs.json'))

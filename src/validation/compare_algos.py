@@ -12,6 +12,7 @@ if __name__ == "__main__":
     import sys
     sys.path.append(str(pathlib.Path(__file__).parent.parent.parent.resolve()))
 
+from src.constants import PATHS
 from src.validation.utils import open_results
 
 ALGO_1 = input("Enter the first algorithm name (use the name of the folder, e.g. time_of_day or moving_average): ") or "time_of_day"
@@ -24,7 +25,7 @@ from src.validation.utils import (open_results,
                                   plot_multi_auc_curves)
 from src.algorithms.time_of_day.likelihood_to_risk import get_event_inds
 
-def run_auc_plots(patient_ids, algo_name, algo_type = False, auc_scores_only = False):
+def run_auc_plots(patient_ids, algo_name, algo_type = False, auc_scores_only = False, storage_folder = ""):
 
     auc_scores = {}
     event_count = {}
@@ -112,26 +113,28 @@ def run_auc_plots(patient_ids, algo_name, algo_type = False, auc_scores_only = F
     fpr, tpr, roc_auc = get_auc_curve_data(y_trues, likelihoods, n_patients)
     for i, patient_id in enumerate(eligible_ids):
         plot_individual_auc_curve(patient_id, fpr[i], tpr[i], roc_auc[i],
-                                  os.path.join("results", "auc_curves", f"{patient_id}_{algo_name}_{algo_type}.png"), False)
+                                  os.path.join(storage_folder, f"{patient_id}_{algo_name}_{algo_type}.png"), False)
     plot_multi_auc_curves(
         fpr, tpr, roc_auc, n_patients,
-        eligible_ids, os.path.join("results", "auc_curves", f"all_{algo_name}_{algo_type}.png"), False)
+        eligible_ids, os.path.join(storage_folder, f"all_{algo_name}_{algo_type}.png"), False)
 
     return auc_scores, event_count, testing_days
 
 if __name__ == "__main__":
 
-    os.makedirs(os.path.join("results", "auc_curves"), exist_ok=True)
+    storage_folder = PATHS.results_path("auc_curves")
+
+    os.makedirs(storage_folder, exist_ok=True)
 
     df = pd.DataFrame()
     for algo_type in ['hourly', 'daily']:
         for algo_name in [ALGO_1, ALGO_2]:
             patient_ids = [
-                file_name.replace(f'_{algo_name}_results.json', '') for file_name in os.listdir('results')
-                if file_name.endswith(f'_{algo_name}_results.json')
+                file_name.replace(f'_{algo_name}_pseudoprospective_outputs.json', '') for file_name in os.listdir('results')
+                if file_name.endswith(f'_{algo_name}_pseudoprospective_outputs.json')
             ]
 
-            auc_scores, event_count, testing_days = run_auc_plots(patient_ids, algo_name, algo_type, auc_scores_only=True)
+            auc_scores, event_count, testing_days = run_auc_plots(patient_ids, algo_name, algo_type, auc_scores_only=True, storage_folder=storage_folder)
             if "patient_id" not in df.columns:
                 df['patient_id'] = list(auc_scores.keys())
 

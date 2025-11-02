@@ -8,6 +8,7 @@ if __name__ == "__main__":
     import sys
     sys.path.append(str(pathlib.Path(__file__).parent.parent.parent.resolve()))
 
+from src.constants import PATHS
 from src.validation.utils import (open_results,
                                   get_auc_curve_data,
                                   plot_individual_auc_curve,
@@ -29,7 +30,7 @@ INPUT ALGO_NAME AND USE_RANDOM_OUTPUTS TO CONFIGURE THE SCRIPT BEHAVIOR
 ALGO_NAME = input("Enter the algorithm name (use the name of the folder, e.g. time_of_day or moving_average): ") or "time_of_day"
 USE_SIGNIFICANCE_TESTING = False
 
-def run_auc_plots(patient_ids, algo_name: str):
+def run_auc_plots(patient_ids, algo_name: str, storage_folder: str = ""):
 
     results_data = open_results(patient_ids, algo_name = algo_name)
 
@@ -60,19 +61,21 @@ def run_auc_plots(patient_ids, algo_name: str):
     fpr, tpr, roc_auc = get_auc_curve_data(y_trues, likelihoods, n_patients)
     for i, patient_id in enumerate(eligible_ids):
         plot_individual_auc_curve(patient_id, fpr[i], tpr[i], roc_auc[i],
-                                  os.path.join("results", "auc_curves", f"{patient_id}_{algo_name}.png"), use_random_outputs=USE_SIGNIFICANCE_TESTING)
+                                  os.path.join(storage_folder, f"{patient_id}_{algo_name}.png"), use_random_outputs=USE_SIGNIFICANCE_TESTING)
     plot_multi_auc_curves(
         fpr, tpr, roc_auc, n_patients,
-        [i.replace(f'_{ALGO_NAME}_results', '')
-         for i in eligible_ids], os.path.join("results", "auc_curves", f"all_{algo_name}.png"), use_random_outputs=USE_SIGNIFICANCE_TESTING)
+        [i.replace(f'_{ALGO_NAME}_pseudoprospective_outputs', '')
+         for i in eligible_ids], os.path.join(storage_folder, f"all_{algo_name}.png"), use_random_outputs=USE_SIGNIFICANCE_TESTING)
 
 
 if __name__ == "__main__":
     # Open all existing results files
     patient_ids = [
-        file_name.replace(f"_{ALGO_NAME}_results.json", '') for file_name in os.listdir('results')
-        if file_name.endswith(f"_{ALGO_NAME}_results.json")
+        file_name.replace(f"_{ALGO_NAME}_pseudoprospective_outputs.json", '') for file_name in os.listdir('results')
+        if file_name.endswith(f"_{ALGO_NAME}_pseudoprospective_outputs.json")
     ]
 
-    os.makedirs(os.path.join("results", "auc_curves"), exist_ok=True)
-    run_auc_plots(patient_ids, ALGO_NAME)
+    storage_folder = save_fig = PATHS.results_path("auc_curves")
+
+    os.makedirs(storage_folder, exist_ok=True)
+    run_auc_plots(patient_ids, ALGO_NAME, storage_folder=storage_folder)

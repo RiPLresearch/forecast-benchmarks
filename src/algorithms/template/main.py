@@ -98,7 +98,8 @@ def run(inputs: AlgorithmInputs, outputs: RiskOutput,
     # INSERT ALGORITHM HERE. Using random number generator between 0 and 1 as example here
     outputs.likelihoods = np.random.rand(len(likelihood_times)).tolist()
 
-    outputs.notes = 'template_example'
+    # Add any notes about the forecast run here
+    outputs.notes = f'Training events used for run: {len(event_list)}. Forecast generated for {parameters.forecast_days} days.'
 
     outputs.event_times = event_list.tolist()
 

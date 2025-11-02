@@ -14,7 +14,7 @@ def output_handler(inputs: AlgorithmInputs, outputs: RiskOutput,
     save_path = PATHS.results_path()
     # save data
     outputs = add_non_lead_back(inputs, outputs)
-    write_json(outputs.__dict__, os.path.join(save_path, f'{inputs.patient_id}_{algo_name}_results.json'))
+    write_json(outputs.__dict__, os.path.join(save_path, f'{inputs.patient_id}_{algo_name}_pseudoprospective_outputs.json'))
 
     # plot forecast
     prospective_likelihood_plot(inputs.patient_id, outputs, save_path, algo_name)
@@ -25,7 +25,7 @@ def output_handler(inputs: AlgorithmInputs, outputs: RiskOutput,
         r_output = randomized_outputs[i]
         r_output = add_non_lead_back(r_input, r_output)
         write_json(
-            r_output.__dict__, os.path.join(save_path, "randomized_outputs", f'{inputs.patient_id}_{algo_name}_random_{i}_results.json')
+            r_output.__dict__, os.path.join(save_path, "randomized_outputs", f'{inputs.patient_id}_{algo_name}_random_{i}_pseudoprospective_outputs.json')
         )
 
 

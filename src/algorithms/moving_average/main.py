@@ -53,6 +53,8 @@ def run(inputs: AlgorithmInputs, outputs: RiskOutput,
 
     outputs = get_moving_average_likelihoods(outputs, event_list, parameters, inputs.request_time)
 
+    outputs.notes += f'Training events used for run: {len(event_list)}. Forecast generated for {parameters.forecast_days} days.'
+
     if not outputs.save_forecasts and inputs.fail_early:  # only triggers in run command
         return RiskOutput.build_empty(save_forecasts=False)
 

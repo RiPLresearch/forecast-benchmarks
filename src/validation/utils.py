@@ -46,7 +46,7 @@ def open_results(patient_ids: Sequence[str], algo_name) -> Dict[str, Any]:
     """
     results = {}
     for patient_id in patient_ids:
-        result = read_json_results(os.path.join("results", f'{patient_id}_{algo_name}_results.json'))
+        result = read_json_results(os.path.join("results", f'{patient_id}_{algo_name}_pseudoprospective_outputs.json'))
         if result is None:
             print(f'{patient_id} had no result data.')
             continue
