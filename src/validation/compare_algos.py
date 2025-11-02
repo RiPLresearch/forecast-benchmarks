@@ -151,4 +151,4 @@ if __name__ == "__main__":
 
     df[f"hourly_{ALGO_1}>{ALGO_2}"] = df[f"auc_{ALGO_1}_hourly"] > df[f"auc_{ALGO_2}_hourly"]
     df[f"daily_{ALGO_1}>{ALGO_2}"] = df[f"auc_{ALGO_1}_daily"] > df[f"auc_{ALGO_2}_daily"]
-    df.to_csv(os.path.join("results", "compare_algos_auc_scores.csv"))
+    df.to_csv(os.path.join(storage_folder, "compare_algos_auc_scores.csv"))
