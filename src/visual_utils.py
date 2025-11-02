@@ -99,7 +99,7 @@ def prospective_likelihood_plot(patient_id: str, outputs: RiskOutput,
                         hspace=0.5)
 
     # Save figure
-    plt.savefig(os.path.join(output_path, f'{patient_id}_{algo_name}.png'),
+    plt.savefig(os.path.join(output_path, f'{patient_id}_{algo_name}_pseudoprospective_forecast_snippet.png'),
                 dpi=300,
                 bbox_inches="tight")
     plt.close()
@@ -235,5 +235,5 @@ def future_likelihood_plot(patient_id: str,
                         hspace=0.5)
 
     # Save figure
-    plt.savefig(os.path.join(output_path, f'{patient_id}.png'), dpi=300)
+    plt.savefig(os.path.join(output_path, f'{patient_id}_forecast.png'), dpi=300)
     plt.close()

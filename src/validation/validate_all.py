@@ -19,15 +19,19 @@ from src.algorithms.time_of_day.likelihood_to_risk import get_event_inds
 
 """"
 Script to generate and save AUC plots for all patients with results from the time_of_day algorithm.
-Saves individual plots in ./results/auc_curves/{patient_id}.png
-and a combined plot in ./results/auc_curves/all.png
+Saves individual plots in ./results/auc_scores/{patient_id}.png
+and a combined plot in ./results/auc_scores/all.png
 """
 
 """
 INPUT ALGO_NAME AND USE_RANDOM_OUTPUTS TO CONFIGURE THE SCRIPT BEHAVIOR
 """
 
-ALGO_NAME = input("Enter the algorithm name (use the name of the folder, e.g. time_of_day or moving_average): ") or "time_of_day"
+# ANSI escape code for red text
+RED = "\033[31m"
+RESET = "\033[0m"
+
+ALGO_NAME = input(f"{RED}Enter the algorithm name (use the name of the folder, e.g. time_of_day or moving_average): {RESET}") or "time_of_day"
 USE_SIGNIFICANCE_TESTING = False
 
 def run_auc_plots(patient_ids, algo_name: str, storage_folder: str = ""):
@@ -67,6 +71,12 @@ def run_auc_plots(patient_ids, algo_name: str, storage_folder: str = ""):
         [i.replace(f'_{ALGO_NAME}_pseudoprospective_outputs', '')
          for i in eligible_ids], os.path.join(storage_folder, f"all_{algo_name}.png"), use_random_outputs=USE_SIGNIFICANCE_TESTING)
 
+    # Save AUC scores to csv
+    auc_df = pd.DataFrame({
+        'patient_id': eligible_ids,
+        'auc_roc_score': [roc_auc[i] for i in range(n_patients)]
+    })
+    auc_df.to_csv(os.path.join(storage_folder, f"auc_scores_{algo_name}.csv"), index=False)
 
 if __name__ == "__main__":
     # Open all existing results files
@@ -75,7 +85,7 @@ if __name__ == "__main__":
         if file_name.endswith(f"_{ALGO_NAME}_pseudoprospective_outputs.json")
     ]
 
-    storage_folder = save_fig = PATHS.results_path("auc_curves")
+    storage_folder = save_fig = PATHS.results_path("auc_scores")
 
     os.makedirs(storage_folder, exist_ok=True)
     run_auc_plots(patient_ids, ALGO_NAME, storage_folder=storage_folder)

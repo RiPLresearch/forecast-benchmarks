@@ -350,7 +350,6 @@ def get_training_inputs(inputs: AlgorithmInputs,
                         end_train: Number) -> AlgorithmInputs:
     """
     Removes inputs after the end_train date
-    N.B. For continuous data, only the last year data from request time is kept
 
     Parameters
     -------
@@ -363,7 +362,7 @@ def get_training_inputs(inputs: AlgorithmInputs,
     AlgorithmInputs
         Filtered inputs
     """
-    predicate = lambda data, field: cast(Number, data[field]) <= end_train
+    predicate = lambda data, field: cast(Number, data[field]) < end_train
 
     new_inputs = copy.deepcopy(inputs)
     new_inputs.seizure_events = [

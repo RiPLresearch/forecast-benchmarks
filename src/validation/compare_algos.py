@@ -15,8 +15,12 @@ if __name__ == "__main__":
 from src.constants import PATHS
 from src.validation.utils import open_results
 
-ALGO_1 = input("Enter the first algorithm name (use the name of the folder, e.g. time_of_day or moving_average): ") or "time_of_day"
-ALGO_2 = input("Enter the second algorithm name (use the name of the folder, e.g. time_of_day or moving_average): ") or "moving_average"
+# ANSI escape codes
+RED = "\033[31m"
+RESET = "\033[0m"
+
+ALGO_1 = input(f"{RED}Enter the first algorithm name (use the name of the folder, e.g. time_of_day or moving_average): {RESET}") or "time_of_day"
+ALGO_2 = input(f"{RED}Enter the second algorithm name (use the name of the folder, e.g. time_of_day or moving_average): {RESET}") or "moving_average"
 
 
 from src.validation.utils import (open_results,
@@ -122,7 +126,7 @@ def run_auc_plots(patient_ids, algo_name, algo_type = False, auc_scores_only = F
 
 if __name__ == "__main__":
 
-    storage_folder = PATHS.results_path("auc_curves")
+    storage_folder = PATHS.results_path("auc_scores")
 
     os.makedirs(storage_folder, exist_ok=True)
 
