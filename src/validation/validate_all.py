@@ -32,6 +32,8 @@ RED = "\033[31m"
 RESET = "\033[0m"
 
 ALGO_NAME = input(f"{RED}Enter the algorithm name (use the name of the folder, e.g. time_of_day or moving_average): {RESET}") or "time_of_day"
+TIMESCALE = input(f"{RED}Is the algorithm hourly or daily? Enter 'hourly' or 'daily' (default is 'hourly' if you press enter): {RESET}") or "hourly"
+
 USE_SIGNIFICANCE_TESTING = False
 
 def run_auc_plots(patient_ids, algo_name: str, storage_folder: str = ""):
@@ -44,12 +46,28 @@ def run_auc_plots(patient_ids, algo_name: str, storage_folder: str = ""):
     eligible_ids = []
     for patient_id in patient_ids:
         result = results_data[patient_id]
-        likelihood = np.array(result['likelihoods'])
-        if likelihood.size == 0:
-            continue
-        times = np.array(result['likelihood_times'])
-        events = np.array(result['event_times'])
-        event_inds = get_event_inds(times, events)
+        if TIMESCALE == "hourly":
+            likelihood = np.array(result['likelihoods'])
+            if likelihood.size == 0:
+                continue
+            # Normalize likelihoods to be in range [0, 1]
+            if any(likelihood > 1):
+                likelihood = likelihood / np.max(likelihood)
+            times = np.array(result['likelihood_times'])
+            events = np.array(result['event_times'])
+            event_inds = get_event_inds(times, events, algo_type = "hourly")
+        
+        elif TIMESCALE == "daily":
+            likelihood = np.array(result['daily_likelihoods'])
+            if likelihood.size == 0:
+                continue
+            # Normalize likelihoods to be in range [0, 1]
+            if any(likelihood > 1):
+                likelihood = likelihood / np.max(likelihood)
+            times = np.array(result['daily_likelihood_times'])
+            events = np.array(result['event_times'])
+            event_inds = get_event_inds(times, events, algo_type = "daily")
+
         y_true = np.zeros(len(likelihood))
         y_true[event_inds] = 1
 

@@ -34,12 +34,6 @@ def run_auc_plots(patient_ids, algo_name, algo_type = False, auc_scores_only = F
     testing_days = {}
     results_data = open_results(patient_ids, algo_name)
 
-    if algo_name == "time_of_day":
-        shorten = True
-        results_ma = open_results(patient_ids, "moving_average")
-    else:
-        shorten = False
-
     # tranform results data into y_true and likelihood arrays
     y_trues = []
     likelihoods = []
@@ -54,36 +48,21 @@ def run_auc_plots(patient_ids, algo_name, algo_type = False, auc_scores_only = F
                 likelihood = np.array(result['daily_likelihoods'])
                 times = np.array(result['daily_likelihood_times'])
 
-                ## recalculate likleihoods:
-                if len(result["likelihoods"]) / 24 == len(likelihood):
-                    # calculate the likelihood array as the average of the result['likelihoods'] every 24 hours
-                    likelihood = np.array(result['likelihoods']).reshape(-1, 24).mean(axis=1)
-                    if times[0] != result['likelihood_times'][0]:
-                        times = np.array(result['likelihood_times']).reshape(-1, 24).min(axis=1)
-
-                if shorten:
-                    first_time = results_ma[patient_id]['daily_likelihood_times'][0]
-                    last_time = results_ma[patient_id]['daily_likelihood_times'][-1]
-                    filter_times = (times >= first_time) & (times <= last_time)
-                    times = times[filter_times]
-                    likelihood = likelihood[filter_times]
-                    events = events[(events >= first_time) & (events <= last_time)]
-
             elif algo_type == "hourly":
                 likelihood = np.array(result['likelihoods'])
                 times = np.array(result['likelihood_times'])
-                if shorten:
-                    first_time = results_ma[patient_id]['likelihood_times'][0]
-                    last_time = results_ma[patient_id]['likelihood_times'][-1]
-                    filter_times = (times >= first_time) & (times <= last_time)
-                    times = times[filter_times]
-                    likelihood = likelihood[filter_times]
-                    events = events[(events >= first_time) & (events <= last_time)]
 
             if likelihood.size == 0:
                 continue
+            # Normalize likelihoods to be in range [0, 1]
+            if any(likelihood > 1):
+                likelihood = likelihood / np.max(likelihood)
 
-            event_inds = get_event_inds(times, events, algo_type)
+            if algo_type == "hourly":
+                event_inds = get_event_inds(times, events, algo_type, algo_type == "hourly")
+            else:
+                event_inds = get_event_inds(times, events, algo_type, algo_type == "daily")
+
             y_true = np.zeros(len(likelihood))
             y_true[event_inds] = 1
 
