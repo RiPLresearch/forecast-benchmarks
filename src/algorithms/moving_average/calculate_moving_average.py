@@ -97,17 +97,10 @@ def get_likelihoods(event_times, likelihoods_times_past, likelihood_times, param
                 (event_times < end_window)
             )[0]
 
-            likelihoods[i] = len(events_in_window) / iter_window_length # Normalize to be in range [0, 1]
+            likelihoods[i] = len(events_in_window) / iter_window_length
 
     else:
         likelihoods[:] = likelihoods_past[-1]  # Use last value for future likelihoods
-
-
-    # Normalize likelihoods to be in range [0, 1]
-    if any(likelihoods > 1):
-        likelihoods = likelihoods / np.max(likelihoods)
-    if any(likelihoods_past > 1):
-        likelihoods_past = likelihoods_past / np.max(likelihoods_past)
 
     return likelihoods, likelihoods_past
 
