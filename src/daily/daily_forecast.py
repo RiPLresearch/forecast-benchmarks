@@ -144,7 +144,7 @@ def link_thresholds_to_timezones(likelihood_times, thresholds):
 
 
 def generate_daily_forecast(outputs: RiskOutput,
-                            _params: ParametersType) -> RiskOutput:
+                            _params: ParametersType, daily_likelihoods_complete: bool = False) -> RiskOutput:
     """
     Calculates daily forecast (likelihoods and thresholds)
 
@@ -152,19 +152,25 @@ def generate_daily_forecast(outputs: RiskOutput,
     ----------
     outputs: RiskOutput
     _params: Parameters
+    daily_likelihoods_complete: bool
+        if True, daily likelihoods are already calculated and stored in outputs.daily_likelihoods
 
     Returns
     -------
     outputs: RiskOutput
         modified outputs
     """
-    # get daily likelihoods
-    all_hourly_likelihoods = np.array(
-        list(outputs.likelihoods_past) + list(outputs.likelihoods))
-    all_daily_likelihoods = [
-        all_hourly_likelihoods[i:i + 24].sum() / 24
-        for i in range(len(all_hourly_likelihoods) - 24)
-    ]  # mean of the likelihoods # ignore last day
+    if daily_likelihoods_complete:
+        # this is already calculated for moving average
+        all_daily_likelihoods = outputs.daily_likelihoods[:-24]
+    else:
+        # get daily likelihoods
+        all_hourly_likelihoods = np.array(
+            list(outputs.likelihoods_past) + list(outputs.likelihoods))
+        all_daily_likelihoods = [
+            all_hourly_likelihoods[i:i + 24].sum() / 24
+            for i in range(len(all_hourly_likelihoods) - 24)
+        ]  # mean of the likelihoods # ignore last day
 
     # split daily likelihoods into past and future likelihoods
     n_past_hours = len(outputs.likelihoods_past)
