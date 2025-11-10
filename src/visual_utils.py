@@ -35,19 +35,6 @@ def prospective_likelihood_plot(patient_id: str, outputs: RiskOutput,
     likelihood_dates = convert_timestamps(likelihood_times)
     event_dates = convert_timestamps(event_times)
 
-    # Find hightest and lowest likelihoods
-    max_likelihood_idxs = np.where(np.array(likelihoods) == 1)[0]
-    i = 0.95
-    while not max_likelihood_idxs.any() and i > 0:
-        max_likelihood_idxs = np.where(np.array(likelihoods) >= i)[0]
-        i -= 0.05
-
-    min_likelihood_idxs = np.where(np.array(likelihoods) == 0)[0]
-    j = 0.05
-    while not min_likelihood_idxs.any() and j < 1:
-        min_likelihood_idxs = np.where(np.array(likelihoods) <= j)[0]
-        j += 0.05
-
     # Plot
     plt.figure(figsize=(10, 6))
     plt.plot(likelihood_dates, likelihoods, 'grey')
@@ -67,7 +54,7 @@ def prospective_likelihood_plot(patient_id: str, outputs: RiskOutput,
 
     for events, col in zip([low_events, med_events, high_events],
                            ['green', 'orange', 'red']):
-        plt.plot(events, [1] * len(events),
+        plt.plot(events, [np.max(likelihoods) * 1.1] * len(events),
                  col,
                  linestyle='',
                  marker='v',
@@ -82,8 +69,8 @@ def prospective_likelihood_plot(patient_id: str, outputs: RiskOutput,
     # Figure settings
     plt.setp(ax,
              xlim=(np.min(likelihood_dates), np.max(likelihood_dates)),
-             ylim=(0, 1.05))
-    ax.set_yticks((0, 1))
+             ylim=(0, np.max(likelihoods) * 1.2))
+    ax.set_yticks((0, np.max(likelihoods)))
     ax.tick_params(axis='x', labelrotation=90, labelsize=8)
 
     # add future forecast lines (likelihoods and scores)
