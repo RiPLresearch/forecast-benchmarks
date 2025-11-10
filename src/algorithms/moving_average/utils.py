@@ -12,7 +12,7 @@ class Parameters(AlgorithmParameters):
     moving_average_window_days: int = 90
     allow_shorter_windows_retrospective: bool = False # Allow shorter moving average windows if not enough events are present
     allow_shorter_windows_prospective: bool = True # Allow shorter moving average windows for calculating future risk forecasts
-    threshold_increment: float = 0.01
+    threshold_increment: float = 0.001
 
     def sanity_check(self) -> bool:
         '''

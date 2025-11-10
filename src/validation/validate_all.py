@@ -52,6 +52,7 @@ def run_auc_plots(patient_ids, algo_name: str, storage_folder: str = ""):
                 continue
             # Normalize likelihoods to be in range [0, 1]
             if any(likelihood > 1):
+                print("Likelihoods greater than 1 found, normalizing...")
                 likelihood = likelihood / np.max(likelihood)
             times = np.array(result['likelihood_times'])
             events = np.array(result['event_times'])
@@ -63,6 +64,7 @@ def run_auc_plots(patient_ids, algo_name: str, storage_folder: str = ""):
                 continue
             # Normalize likelihoods to be in range [0, 1]
             if any(likelihood > 1):
+                print("Likelihoods greater than 1 found, normalizing...")
                 likelihood = likelihood / np.max(likelihood)
             times = np.array(result['daily_likelihood_times'])
             events = np.array(result['event_times'])

@@ -54,14 +54,21 @@ def get_likelihoods(event_times, likelihoods_times_past, likelihood_times, param
     -------
     likelihoods_past: array of float
         likelihoods for past events, in range [0, 1]
+    likelihoods: array of float
+        likelihoods for future events, in range [0, 1]
+    likelihoods_daily: array of float
+        daily likelihoods for past and future events, in range [0, 1]
     """
     # Initialise variables
     likelihoods_past = np.zeros_like(likelihoods_times_past)
+    likelihoods_past_daily = np.zeros_like(likelihoods_times_past)
     likelihoods = np.zeros_like(likelihood_times)
+    likelihoods_daily = np.zeros_like(likelihood_times)
     ma_window  = params.moving_average_window_days
 
     # remove duplicate events
-    event_times = np.unique(event_times)
+    event_hours = np.unique(np.round(event_times * HOURS_IN_A_DAY)) / HOURS_IN_A_DAY
+    event_days = np.unique(np.round(event_times))
 
     # convert times to days
     likelihoods_times_past = likelihoods_times_past / HOURS_IN_A_DAY
@@ -70,39 +77,59 @@ def get_likelihoods(event_times, likelihoods_times_past, likelihood_times, param
     for i, end_window in enumerate(likelihoods_times_past):
 
         if params.allow_shorter_windows_retrospective:
-            start_window = max(end_window - ma_window, np.min(event_times))
+            start_window = max(end_window - ma_window, np.min(event_days))
         else:
             start_window = end_window - ma_window
         
         iter_window_length = end_window - start_window
 
         # Find number of events in moving average window
-        events_in_window = np.where(
-            (event_times >= start_window) & 
-            (event_times < end_window)
+        event_hours_in_window = np.where(
+            (event_hours >= start_window) & 
+            (event_hours < end_window)
+        )[0]
+        event_days_in_window = np.where(
+            (event_days >= start_window) & 
+            (event_days < end_window)
         )[0]
         
-        likelihoods_past[i] = len(events_in_window) / iter_window_length
+        # Past event hours / total hours in window
+        likelihoods_past[i] = len(event_hours_in_window) / (iter_window_length * HOURS_IN_A_DAY)  # Normalize to be in range [0, 1]
+        # Past event days / total days in window
+        likelihoods_past_daily[i] = len(event_days_in_window) / iter_window_length
 
     if params.allow_shorter_windows_prospective:
 
         for i, end_window in enumerate(likelihood_times):
 
-            start_window =  max(end_window - ma_window, np.min(event_times))
+            start_window =  max(end_window - ma_window, np.min(event_days))
+            if start_window != end_window - ma_window:
+                print("Warning: Prospective moving average window shortened to fit available data.")
             iter_window_length = end_window - start_window
 
             # Find number of events in moving average window
-            events_in_window = np.where(
-                (event_times >= start_window) & 
-                (event_times < end_window)
+            event_hours_in_window = np.where(
+                (event_hours >= start_window) & 
+                (event_hours < end_window)
+            )[0]
+            event_days_in_window = np.where(
+                (event_days >= start_window) & 
+                (event_days < end_window)
             )[0]
 
-            likelihoods[i] = len(events_in_window) / iter_window_length
+            # Future event hours / total hours in window
+            likelihoods[i] = len(event_hours_in_window) / (iter_window_length * HOURS_IN_A_DAY)  # Normalize to be in range [0, 1]
+
+            # Future event days / total days in window
+            likelihoods_daily[i] = len(event_days_in_window) / iter_window_length
 
     else:
-        likelihoods[:] = likelihoods_past[-1]  # Use last value for future likelihoods
+        # Use last value for future likelihoods
+        likelihoods[:] = likelihoods_past[-1]
+        likelihoods_daily[:] = likelihoods_past_daily[-1]
 
-    return likelihoods, likelihoods_past
+    all_likelihoods_daily = np.concatenate((likelihoods_past_daily, likelihoods_daily))
+    return likelihoods, likelihoods_past, all_likelihoods_daily
 
 
 def get_moving_average_likelihoods(outputs, event_times, params,
@@ -124,16 +151,18 @@ def get_moving_average_likelihoods(outputs, event_times, params,
         outputs.save_forecasts = False
         return outputs
 
-    likelihoods, likelihoods_past = get_likelihoods(event_times, likelihood_times_past, likelihood_times, params)
+    likelihoods, likelihoods_past, likelihoods_daily = get_likelihoods(event_times, likelihood_times_past, likelihood_times, params)
 
-    outputs.likelihoods = likelihoods.tolist(
-    )  # list of float, 24*60 values for the next 60 days
+    # list of float, 24*60 values for the next 60 days
+    outputs.likelihoods = likelihoods.tolist()
     # list of float, likelihood values for past hours (0-1)
     outputs.likelihoods_past = likelihoods_past.tolist()
+    # list of float, daily likelihood values for past and future days
+    outputs.daily_likelihoods = likelihoods_daily.tolist()
     # list of float,  hourly UNIX timestamps for 60 days
     outputs.likelihood_times = (likelihood_times *
                                 MILLISECONDS_IN_AN_HOUR).tolist()
-    # list fo flo®at, hourly UNIX timestamps for past data
+    # list of float, hourly UNIX timestamps for past data
     outputs.likelihood_times_past = (likelihood_times_past *
                                      MILLISECONDS_IN_AN_HOUR).tolist()
     # list of float, UNIX timestamps for past seizures

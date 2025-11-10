@@ -159,8 +159,8 @@ def get_thresholds(likelihoods: Array, event_inds: Array, inc: float) -> Tuple[f
     best_levels = get_risk_levels(likelihoods, best_med, best_high)
     best_score, _, _ = get_thresholds_score(best_levels, event_inds)
 
-    for med_thresh in np.arange(inc, 1 - inc, inc):
-        for high_thresh in np.arange(med_thresh + inc, 1, inc):
+    for med_thresh in np.arange(inc, np.max(likelihoods) - inc, inc):
+        for high_thresh in np.arange(med_thresh + inc, np.max(likelihoods), inc):
             risk_levels = get_risk_levels(likelihoods, med_thresh, high_thresh)
             score, _, _ = get_thresholds_score(risk_levels, event_inds)
             if score > best_score:

@@ -59,7 +59,7 @@ def run(inputs: AlgorithmInputs, outputs: RiskOutput,
     outputs = likelihood_to_risk(outputs, parameters)
 
     if parameters.include_daily_forecast:
-        outputs = generate_daily_forecast(outputs, parameters)
+        outputs = generate_daily_forecast(outputs, parameters, daily_likelihoods_complete = True)
         parameters.remove_daily_forecast_padding()
 
     outputs.notes += f'Training events used for run: {len(event_list)}. Forecast generated for {parameters.forecast_days} days.'
