@@ -209,7 +209,7 @@ def delete_path(path: str) -> None:
 def random_forecasts(inputs: AlgorithmInputs, params: ParametersType, outputs: RiskOutput) -> \
         RiskOutput:
     """
-    Generates RiskOutput with randomly generated forecasts, useful when validating overseer
+    Generates RiskOutput with randomly generated forecasts, useful when validating.
     """
 
     # Get event times

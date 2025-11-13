@@ -10,8 +10,7 @@ from .utils import Parameters
 def run(inputs: AlgorithmInputs, outputs: RiskOutput,
         parameters: Parameters) -> RiskOutput:
     """
-    Runs the risk forecast algorithm. Input and output structure are as required by the
-    SEER-2250 spec.
+    Runs the risk forecast algorithm.
 
     Parameters
     ----------

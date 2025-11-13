@@ -9,9 +9,7 @@ from src.constants import MILLISECONDS_IN_A_SECOND
 
 class DataGenerator:
     """
-    Retrieves data from a ApiDataSource (currently public/private API or file)
-    or FileDataSource (stored data in cache/)
-    and formats to AlgorithmInputs structures following the SEER-2250 spec.
+    Retrieves data from FileDataSource (stored data in cache/).
     """
     def __init__(self, source: FileDataSource):
         self.source = source

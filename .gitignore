@@ -50,3 +50,7 @@ node_modules
 
 # specific to local repo
 requirements-38.txt
+
+# file extensions
+*.csv
+*.pyc

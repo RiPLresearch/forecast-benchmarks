@@ -71,7 +71,7 @@ def run(algos, ids, outputs, n_events, prospective, hyperparameters, sig_test,
     print("=== Running algorithm command ===")
     runtime = AlgorithmRuntime(
         ids.split(',') if ids else None,
-        algos.split(',') if algos else ["overseer"],
+        algos.split(',') if algos else ["moving_average"],
         outputs.split(',') if outputs else ["print"], n_events, prospective,
         hyperparameters.split(',') if hyperparameters else ["default"],
         sig_test, mulitprocessing, start_time)

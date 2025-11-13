@@ -43,7 +43,7 @@ def run(inputs: AlgorithmInputs, outputs: RiskOutput,
         parameters: Parameters) -> RiskOutput:
     """
     Runs the risk forecast algorithm. All algorithms should be callable from a function
-    of this name. Input and output structure are as required by the SEER-2250 spec.
+    of this name.
 
     Parameters
     ----------

@@ -19,7 +19,7 @@ class PathUtility:
         return path
 
     def repo_path(self) -> str:
-        """Get seer-risk-algo repo path"""
+        """Get forecast-benchmarks repo path"""
         if not hasattr(self, 'repo_folder'):
             setattr(self, 'repo_folder',
                     pathlib.Path(__file__).parent.parent.resolve())
