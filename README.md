@@ -145,5 +145,6 @@ Run your algorithm using the command:
 If you would like to contribute to this repository by adding your own benchmarking algorithm or making changes to the existing codebase, please contact Rachel Stirling (rachel.stirling@unimelb.edu.au) or Pip Karoly (karolyp@unimelb.edu.au). You can also open an issue or pull request for any bug reports or feature suggestions (request Rachel and Pip as reviewers).
 
 # Referencing this work
-If you use this software, please cite it as below.
-Stirling RE, Brinkmann BH, Freestone DR, Karoly PJ. Tracking seizure cycles beats a prospective moving average: Commentary on "Rigorous evaluation of five e-diary alone seizure forecasting tools". Epilepsia. 2025 doi: 10.1002/epi.70084 https://pubmed.ncbi.nlm.nih.gov/41474376/ 
+If you use this software, please cite it as below:
+
+Stirling RE, Brinkmann BH, Freestone DR, Karoly PJ (2025) Tracking seizure cycles beats a prospective moving average: Commentary on "Rigorous evaluation of five e-diary alone seizure forecasting tools". _Epilepsia_. doi: 10.1002/epi.70084 https://pubmed.ncbi.nlm.nih.gov/41474376/ 
