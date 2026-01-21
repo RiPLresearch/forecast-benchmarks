@@ -146,4 +146,4 @@ If you would like to contribute to this repository by adding your own benchmarki
 
 # Referencing this work
 If you use this software, please cite it as below.
-## TODO
+Stirling RE, Brinkmann BH, Freestone DR, Karoly PJ. Tracking seizure cycles beats a prospective moving average: Commentary on "Rigorous evaluation of five e-diary alone seizure forecasting tools". Epilepsia. 2025 doi: 10.1002/epi.70084 https://pubmed.ncbi.nlm.nih.gov/41474376/ 
